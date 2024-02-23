@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simon Game</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #000;
+  }
+
+  .simon-container {
+    margin-top: 50px;
+    text-align: center;
+  }
+
+  .button-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: 20px;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .button {
+    width: 150px;
+    height: 150px;
+    margin: 10px;
+    border-radius: 10%;
+    cursor: pointer;
+  }
+
+  .green {
+    background-color: green;
+  }
+
+  .red {
+    background-color: red;
+  }
+
+  .yellow {
+    background-color: yellow;
+  }
+
+  .blue {
+    background-color: blue;
+  }
+
+  .glow {
+    animation: glow-animation 0.5s ease infinite alternate;
+  }
+
+  @keyframes glow-animation {
+    to {
+      background-color: rgba(255, 255, 255, 1);
+      box-shadow: 0px 0px 30px rgba(255, 255, 255, 1);
+    }
+  }
+
+  h1 {
+    font-size: 3em;
+    color: white;
+    text-align: center;
+  }
+  p {
+    font-size: 15px;
+    text-align: center;
+    color: #ccc;
+  }
+
+  h2 {
+    font-size: 2em;
+    color: brown;
+    background-color: white;
+    border-radius: 5px;
+    width: 110px;
+    text-align: center;
+    margin-top: 5px;
+  }
+  #startButtonContainer {
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 2px solid white;
+    background-color: purple;
+    padding: 20px;
+    border-radius: 10px;
+    opacity: 0;
+  }
+
+  @keyframes pop-up {
+    0% {
+      transform: translate(-50%, -50%) scale(0);
+      opacity: 0;
+    }
+    100% {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
+  }
+
+  #startButton {
+    background-color: #4CAF50;
+    border: none;
+    border-radius: 50px;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  .popup {
+    border: 2px solid white;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: purple;
+    padding: 20px;
+    border-radius: 10px;
+    display: none;
+  }
+
+  .play-again-button {
+    background-color: #4CAF50;
+    border: none;
+    border-radius: 50px;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<h1>Simon Game</h1>
+<p>To win the game,<br>accurately repeat increasingly complex<br>sequences of colors for as long as possible<br>without making a mistake.</p>
+<div id="startButtonContainer">
+  <button id="startButton" onclick="startGame()">Play</button>
+</div>
+<div class="button-container">
+  <div class="button green" onclick="handleButtonClick(0)"></div>
+  <div class="button red" onclick="handleButtonClick(1)"></div>
+  <div class="button yellow" onclick="handleButtonClick(2)"></div>
+  <div class="button blue" onclick="handleButtonClick(3)"></div>
+</div>
+<div class="simon-container">
+  <h2 id="rounds">Round 1</h2>
+</div>
+<div class="popup" id="popup">
+  <p style="font-size:18px; color:white;">Wrong sequence<br>GAME OVER!</p>
+  <button class="play-again-button" onclick="resetGame()">Play Again</button>
+</div>
+
+<script>
+  const buttons = document.querySelectorAll('.button');
+  const sequence = [];
+  let playerSequence = [];
+  let round = 1;
+
+  function startGame() {
+    document.getElementById('startButtonContainer').style.display = 'none';
+    generateSequence();
+  }
+
+  function handleButtonClick(index) {
+    const button = buttons[index];
+    button.classList.add('pressed');
+    setTimeout(() => {
+      button.classList.remove('pressed');
+    }, 200);
+    playerSequence.push(index);
+    checkSequence();
+  }
+
+  function generateSequence() {
+    const randomIndex = Math.floor(Math.random() * 4);
+    sequence.push(randomIndex);
+    playSequence();
+  }
+
+  function playSequence() {
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i >= sequence.length) {
+        clearInterval(interval);
+        return;
+      }
+      const button = buttons[sequence[i]];
+      button.classList.add('glow');
+      setTimeout(() => {
+        button.classList.remove('glow');
+      }, 500);
+      i++;
+    }, 1000);
+  }
+
+  function checkSequence() {
+    if (playerSequence.length === sequence.length) {
+      if (JSON.stringify(playerSequence) === JSON.stringify(sequence)) {
+        round++;
+        document.getElementById('rounds').textContent = `Round ${round}`;
+        playerSequence = [];
+        generateSequence();
+      } else {
+        const popup = document.getElementById('popup');
+        popup.style.display = 'block';
+      }
+    }
+  }
+
+  function resetGame() {
+    const popup = document.getElementById('popup');
+    popup.style.display = 'none';
+    sequence.length = 0;
+    playerSequence.length = 0;
+    round = 1;
+    document.getElementById('rounds').textContent = `Round ${round}`;
+    generateSequence();
+  }
+  document.getElementById('startButtonContainer').style.opacity = '1';
+</script>
+</body>
+</html>
